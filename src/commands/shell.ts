@@ -1,151 +1,185 @@
-import * as ds from './../utils/debugScopes'
-import * as t from './../utils/types'
-import * as r from '../routing/routeGraph'
-import { initUniData } from '../utils/data'
-import { quoteRoutes } from '../routing/quoting'
+import * as ds from './../utils/debugScopes';
+import * as t from './../utils/types';
+import * as r from '../routing/routeGraph';
+import { initUniData } from '../utils/data';
+import { quoteRoutes } from '../routing/quoting';
 
-import * as readline from 'readline'
+import * as readline from 'readline';
 
-const log = ds.getLog('shell')
+const log = ds.getLog('shell');
 
-// @console 
-const _promptUser = async (query: string):Promise<string> => 
-{
-  const _query = '\n🍣 Sushi Swap Router &> ' + query + ' '
+// @console
+const _promptUser = async (query: string): Promise<string> => {
+  const _query = '\n🍣 Sushi Swap Router &> ' + query + ' ';
   const rli = readline.createInterface({
     input: process.stdin,
-    output: process.stdout
-  })
+    output: process.stdout,
+  });
 
   return new Promise((resolve) => {
     rli.question(_query, (answer: string) => {
       rli.close();
       resolve(answer);
-    })
-  })
-}
+    });
+  });
+};
 
-export const shell = async(): Promise<void> => {
+export const shell = async (): Promise<void> => {
   const _settings: any = {
     maxHops: {
       description: 'The maximum number of hops allowed by the router.',
       value: 2,
-      type: 'integer'
+      type: 'integer',
     },
     maxImpact: {
-      description: 'The maximum impact on the trade from liquidity limitations (slippage).',
+      description:
+        'The maximum impact on the trade from liquidity limitations (slippage).',
       value: 10.0,
-      type: 'float'
-    }
-  }
+      type: 'float',
+    },
+  };
 
-  let _uniData: t.UniData = await initUniData()
+  let _uniData: t.UniData = await initUniData();
 
-  let command = ''
+  let command = '';
   while (command.toLowerCase() !== 'q') {
-    command = await _promptUser('🍣: [options]: (s)wap - (r)efresh data - se(t)tings, or (q)uit ')
+    command = await _promptUser(
+      '🍣: [options]: (s)wap - (r)efresh data - se(t)tings, or (q)uit ',
+    );
 
     switch (command.toLowerCase()) {
       case 's':
         {
-          let validEntry = false
-          let _payToken = ''
-          let _payTokenSymbol = ''
+          let validEntry = false;
+          let _payToken = '';
+          let _payTokenSymbol = '';
           while (!validEntry) {
-            const payToken = await _promptUser('🍣: what token would you like to pay with ( contract address )?')
-            _payToken = payToken.toLowerCase().trim()
-            _payTokenSymbol = _uniData.tokenData.getSymbol(_payToken)
+            const payToken = await _promptUser(
+              '🍣: what token would you like to pay with ( contract address )?',
+            );
+            _payToken = payToken.toLowerCase().trim();
+            _payTokenSymbol = _uniData.tokenData.getSymbol(_payToken);
             if (_payTokenSymbol) {
-              validEntry = true
-              log.info(`Paying with ${_payTokenSymbol} (${_payToken})`)
+              validEntry = true;
+              log.info(`Paying with ${_payTokenSymbol} (${_payToken})`);
             } else {
-              log.info(`❌ Invalid token specified: ${payToken}. Try again.`)
+              log.info(`❌ Invalid token specified: ${payToken}. Try again.`);
             }
           }
 
-          validEntry = false
-          let amtPayToken = ''
-          let _amtPayToken = 0.0
+          validEntry = false;
+          let amtPayToken = '';
+          let _amtPayToken = 0.0;
           while (!validEntry) {
-            amtPayToken = await _promptUser(`🍣: how much ${_payTokenSymbol} (${_payToken}) would you like to spend (e.g. 1.28)?`)
+            amtPayToken = await _promptUser(
+              `🍣: how much ${_payTokenSymbol} (${_payToken}) would you like to spend (e.g. 1.28)?`,
+            );
             try {
-              _amtPayToken = parseFloat(amtPayToken)
-              validEntry = true
+              _amtPayToken = parseFloat(amtPayToken);
+              validEntry = true;
             } catch (conversionError) {
-              log.info(`❌ Invalid amount of ${_payTokenSymbol} (${_payToken}) specified: ${amtPayToken}. (Must be a number, greater than zero. No units or non-numeric characters.)`)
+              log.info(
+                `❌ Invalid amount of ${_payTokenSymbol} (${_payToken}) specified: ${amtPayToken}. (Must be a number, greater than zero. No units or non-numeric characters.)`,
+              );
             }
           }
 
-          validEntry = false
-          let _buyToken = ''
-          let _buyTokenSymbol = ''
+          validEntry = false;
+          let _buyToken = '';
+          let _buyTokenSymbol = '';
           while (!validEntry) {
-            const buyToken = await _promptUser('🍣: what token would you like to buy [&> contract address])?')
-            _buyToken = buyToken.toLowerCase().trim()
-            const _buyTokenSymbol = _uniData.tokenData.getSymbol(_buyToken)
+            const buyToken = await _promptUser(
+              '🍣: what token would you like to buy [&> contract address])?',
+            );
+            _buyToken = buyToken.toLowerCase().trim();
+            const _buyTokenSymbol = _uniData.tokenData.getSymbol(_buyToken);
             if (_buyTokenSymbol) {
-              validEntry = true
-              log.info(`Buying ${_buyTokenSymbol} (${_buyToken})`)
+              validEntry = true;
+              log.info(`Buying ${_buyTokenSymbol} (${_buyToken})`);
             } else {
-              log.info(`Invalid token specified: ${buyToken}. Try again.`)
+              log.info(`Invalid token specified: ${buyToken}. Try again.`);
             }
           }
 
-          log.info(`🔵 Calculating routes for swap of: ${_amtPayToken} ${_payToken} -> ${_buyToken} ...`)
+          log.info(
+            `🔵 Calculating routes for swap of: ${_amtPayToken} ${_payToken} -> ${_buyToken} ...`,
+          );
           const constraints: t.Constraints = {
-            maxDistance: _settings["maxHops"].value
-          }
-          const _stackedRoutes: t.VFStackedRoutes = 
-              r.findRoutes(_uniData.pairGraph, _payToken, _buyToken, constraints)
+            maxDistance: _settings['maxHops'].value,
+          };
+          const _stackedRoutes: t.VFStackedRoutes = r.findRoutes(
+            _uniData.pairGraph,
+            _payToken,
+            _buyToken,
+            constraints,
+          );
 
-          const _routes = r.unstackRoutes(_stackedRoutes)
+          const _routes = r.unstackRoutes(_stackedRoutes);
 
-          const _costedRoutes = await quoteRoutes(_uniData.pairData,
-                                                  _uniData.tokenData,
-                                                  _routes, amtPayToken,
-                                                  _settings['maxImpact'].value)
+          const _costedRoutes = await quoteRoutes(
+            _uniData.pairData,
+            _uniData.tokenData,
+            _routes,
+            amtPayToken,
+            _settings['maxImpact'].value,
+          );
           // log.info(`Routes:\n${JSON.stringify(_costedRoutes, null, 2)}`)
-          
-          const _legacyFmtRoutes = r.convertRoutesToLegacyFmt(_uniData.pairData,
-                                                              _uniData.tokenData,
-                                                              _costedRoutes)
-          
-          log.info(`✅ Solver generated routes:\n${JSON.stringify(_legacyFmtRoutes, null, 2)}`)
+
+          const _legacyFmtRoutes = r.convertRoutesToLegacyFmt(
+            _uniData.pairData,
+            _uniData.tokenData,
+            _costedRoutes,
+          );
+
+          log.info(
+            `✅ Solver generated routes:\n${JSON.stringify(
+              _legacyFmtRoutes,
+              null,
+              2,
+            )}`,
+          );
         }
         break;
-      
+
       case 'r':
-        log.info('🔁 Refreshing Data ...')
-        _uniData = await initUniData(true)
+        log.info('🔁 Refreshing Data ...');
+        _uniData = await initUniData(true);
         break;
-      
+
       case 't':
         {
-          log.info('Settings ...')
+          log.info('Settings ...');
           for (const _settingKey in _settings) {
-            const _setting = _settings[_settingKey]
-            const _value = await _promptUser(`Settings: enter an ${_setting.type} value for "${_settingKey}" (current value = ${_setting.value})? \n`)
+            const _setting = _settings[_settingKey];
+            const _value = await _promptUser(
+              `Settings: enter an ${_setting.type} value for "${_settingKey}" (current value = ${_setting.value})? \n`,
+            );
             switch (_setting.type) {
-              case "integer":
-                const _tempInt = parseInt(_value)
+              case 'integer':
+                const _tempInt = parseInt(_value);
                 if (_tempInt <= 0) {
-                  log.info(`❌ Invalid setting specified for "${_settingKey}" (must be > 0).`)
+                  log.info(
+                    `❌ Invalid setting specified for "${_settingKey}" (must be > 0).`,
+                  );
                 } else {
-                  _setting.value = _tempInt
+                  _setting.value = _tempInt;
                 }
                 break;
 
-              case "float":
-                const _tempFloat= parseFloat(_value)
+              case 'float':
+                const _tempFloat = parseFloat(_value);
                 if (_tempFloat > 0.0) {
-                  _setting.value = _tempFloat
+                  _setting.value = _tempFloat;
                 } else {
-                  log.info(`❌ Invalid setting specified for "${_settingKey}" (must be > 0).`)
+                  log.info(
+                    `❌ Invalid setting specified for "${_settingKey}" (must be > 0).`,
+                  );
                 }
                 break;
-            
-              default:  /* string etc. */
-                _setting.value = _value
+
+              default:
+                /* string etc. */
+                _setting.value = _value;
                 break;
             }
           }
@@ -153,15 +187,14 @@ export const shell = async(): Promise<void> => {
         break;
 
       case 'q':
-        log.info(' 🛑 Quitting ...')
+        log.info(' 🛑 Quitting ...');
         break;
-    
+
       default:
-        log.info(`🟡 Ignoring unknown command ${command}.`)
+        log.info(`🟡 Ignoring unknown command ${command}.`);
         break;
     }
   }
-  
-  process.exit(0)
-}
 
+  process.exit(0);
+};

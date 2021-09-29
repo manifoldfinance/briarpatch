@@ -1,15 +1,15 @@
 {
-    "cSpell.words": [
-        "cytoscape",
-        "dagrejs",
-        "fmtd",
-        "graphlib",
-        "loglevel",
-        "multigraph",
-        "Multihops",
-        "pathfind",
-        "Readfile",
-        "subdir",
-        "Subdirs"
-    ]
+  "cSpell.words": [
+    "cytoscape",
+    "dagrejs",
+    "fmtd",
+    "graphlib",
+    "loglevel",
+    "multigraph",
+    "Multihops",
+    "pathfind",
+    "Readfile",
+    "subdir",
+    "Subdirs"
+  ]
 }
