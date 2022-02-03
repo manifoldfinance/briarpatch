@@ -1,8 +1,8 @@
 {
-  "name": "project-briarpatch",
+  "name": "sushi-turbo",
   "private": true,
   "version": "0.1.0",
-  "description": "development",
+  "description": "sushiswap terminal and pathway for liquidity",
   "main": "dist/src/index.js",
   "dependencies": {
     "@dagrejs/graphlib": "^2.1.4",
