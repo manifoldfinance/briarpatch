@@ -1,11 +1,24 @@
 # `briarpatch`
 
-> @summary uniswapV2 / sushiswapV1 path-based solver.  
+[![nodejs](https://github.com/manifoldfinance/briarpatch/actions/workflows/nodejs.yml/badge.svg)](https://github.com/manifoldfinance/briarpatch/actions/workflows/nodejs.yml)
 
 
-> @note must configure graphql endpoints to use sushiswap 
+## Usage
 
-```
+Configure `.env` with an `ETH_RPC_URL=` provider then:
+
+```shell
 $ ./install.sh
 ```
 
+```shell
+$ ./run
+```
+
+### Development
+
+> TODO
+
+## License
+
+MPL-2.0
